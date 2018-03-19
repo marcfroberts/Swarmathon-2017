@@ -1,5 +1,5 @@
 #include "usbSerial.h"
-
+//Alec G.: No changes
 using namespace std;
 
 USBSerial::USBSerial() {
