@@ -2,7 +2,7 @@
 #define PICKUPCONTROLLER_H
 
 #include "Controller.h"
-#include "TagPoint.h"
+#include "Tag.h"
 
 class PickUpController : virtual Controller
 {
@@ -12,7 +12,9 @@ public:
 
   void Reset() override;
   Result DoWork() override;
-  void SetTagData(vector<TagPoint> tags);
+
+  // Give the controller a list of visible april tags.
+  void SetTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
 
@@ -20,6 +22,10 @@ public:
 
   float getDistance() {return blockDistance;}
   bool GetLockTarget() {return lockTarget;}
+
+  // Give the controller the current ultrasound readings. This is
+  // needed because ultrasound data is used to determine whether a
+  // block has been successfully picked up.
   void SetUltraSoundData(bool blockBlock);
 
   bool GetIgnoreCenter() {return ignoreCenterSonar;}
@@ -44,6 +50,7 @@ private:
   bool timeOut;
   int nTargetsSeen;
   long int millTimer;
+  long int target_timer;
 
   //yaw error to target block
   double blockYawError;

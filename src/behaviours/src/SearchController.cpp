@@ -1,4 +1,5 @@
 #include "SearchController.h"
+#include <angles/angles.h>
 
 SearchController::SearchController() {
   rng = new random_numbers::RandomNumberGenerator();
@@ -25,12 +26,12 @@ void SearchController::Reset() {
 Result SearchController::DoWork() {
 
   if (!result.wpts.waypoints.empty()) {
-    if (hypot(result.wpts.waypoints[0].x-currentLocation.x, result.wpts.waypoints[0].y-currentLocation.y) < 0.10) {
+    if (hypot(result.wpts.waypoints[0].x-currentLocation.x, result.wpts.waypoints[0].y-currentLocation.y) < 0.15) {//Alec G.: original right-most value: 0.10
       attemptCount = 0;
     }
   }
 
-  if (attemptCount > 0 && attemptCount < 5) {//if (attemptCount > 0 && attemptCount < 5) {
+  if (attemptCount > 0 && attemptCount < 2) {//Alec G.: range changed from 0-5 to 0-2; changes efficiency
     attemptCount++;
     if (succesfullPickup) {
       succesfullPickup = false;
@@ -38,7 +39,8 @@ Result SearchController::DoWork() {
     }
     return result;
   }
-  else if (attemptCount >= 5 || attemptCount == 0) {//else if (attemptCount >= 5 || attemptCount == 0) {
+  else if (attemptCount >= 2 || attemptCount == 0) //Alec G.: same change here as before
+  {
     attemptCount = 1;
 
 
@@ -46,31 +48,45 @@ Result SearchController::DoWork() {
     Point  searchLocation;
 
     //select new position 50 cm from current location
+
+    //Alec G.: a variable made to change the max dist. for searching
+    float _cm = 1.5//orininal value: 0.5
+
     if (first_waypoint)
     {
       first_waypoint = false;
       searchLocation.theta = currentLocation.theta + M_PI;
-      searchLocation.x = currentLocation.x + (0.5 * cos(searchLocation.theta));
-      searchLocation.y = currentLocation.y + (0.5 * sin(searchLocation.theta));
+      searchLocation.x = currentLocation.x + (_cm * cos(searchLocation.theta));//Alec G.: _cm replacing 0.5 in these two lines of code
+      searchLocation.y = currentLocation.y + (_cm * sin(searchLocation.theta));//Alec G.: "
     }
     else
     {
       //select new heading from Gaussian distribution around current heading
       searchLocation.theta = rng->gaussian(currentLocation.theta, 0.785398); //45 degrees in radians
-      searchLocation.x = currentLocation.x + (0.5 * cos(searchLocation.theta));
-      searchLocation.y = currentLocation.y + (0.5 * sin(searchLocation.theta));
+      searchLocation.x = currentLocation.x + (_cm * cos(searchLocation.theta));//0.5
+      searchLocation.y = currentLocation.y + (_cm * sin(searchLocation.theta));//0.5
     }
 
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
-
+    
     return result;
   }
 
 }
 
 void SearchController::SetCenterLocation(Point centerLocation) {
+  
+  float diffX = this->centerLocation.x - centerLocation.x;
+  float diffY = this->centerLocation.y - centerLocation.y;
   this->centerLocation = centerLocation;
+  
+  if (!result.wpts.waypoints.empty())
+  {
+  result.wpts.waypoints.back().x -= diffX;
+  result.wpts.waypoints.back().y -= diffY;
+  }
+  
 }
 
 void SearchController::SetCurrentLocation(Point currentLocation) {

@@ -153,7 +153,7 @@ Result LogicController::DoWork() {
 
     //used for precision driving pass through
   case LOGIC_STATE_PRECISION_COMMAND: {
-
+PrioritizedController
     //unlike waypoints precision commands change every update tick so we ask the
     //controller for new commands on every update tick.
     result = control_queue.top().controller->DoWork();
@@ -200,9 +200,10 @@ void LogicController::ProcessData() {
 
   //this priority is used when returning a target to the center collection zone
   else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP) {
+	  //Alec G.: obstacleController changed from 15 to 5 (higher priority)
     prioritizedControllers = {
     PrioritizedController{-1, (Controller*)(&searchController)},
-    PrioritizedController{15, (Controller*)(&obstacleController)},
+    PrioritizedController{5, (Controller*)(&obstacleController)},
     PrioritizedController{-1, (Controller*)(&pickUpController)},
     PrioritizedController{10, (Controller*)(&range_controller)},
     PrioritizedController{1, (Controller*)(&dropOffController)}
